@@ -1,27 +1,46 @@
 import React, { useState, useEffect } from "react";
-import { Trash2 } from "lucide-react"; // 👈 Icon
+import { Trash2 } from "lucide-react";
 import ItemModal from "../components/ItemModal";
+import axios from "axios";
 
 function ViewItems() {
     const [items, setItems] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
 
     useEffect(() => {
-        const storedItems = JSON.parse(localStorage.getItem("items")) || [];
-        setItems(storedItems);
+        const fetchItems = async () => {
+            try {
+                const res = await axios.get("http://localhost:5000/items");
+                setItems(res.data);
+            } catch (err) {
+                console.error("Failed to fetch items", err);
+            }
+        };
+        fetchItems();
     }, []);
 
-    const handleDelete = (indexToDelete) => {
-        const updatedItems = items.filter((_, index) => index !== indexToDelete);
-        localStorage.setItem("items", JSON.stringify(updatedItems));
-        setItems(updatedItems);
+    const handleDelete = async (id) => {
+        try {
+            await axios.delete(`http://localhost:5000/items/${id}`);
+            const updatedItems = items.filter((item) => item.id !== id);
+            setItems(updatedItems);
+        } catch (err) {
+            console.error("Failed to delete item", err);
+        }
     };
 
-    const handleDeleteAll = () => {
+    const handleDeleteAll = async () => {
         const confirmDelete = window.confirm("Are you sure you want to delete all items?");
         if (confirmDelete) {
-            localStorage.removeItem("items");
-            setItems([]);
+            try {
+                const deletePromises = items.map((item) =>
+                    axios.delete(`http://localhost:5000/items/${item.id}`)
+                );
+                await Promise.all(deletePromises);
+                setItems([]);
+            } catch (err) {
+                console.error("Failed to delete all items", err);
+            }
         }
     };
 
@@ -29,8 +48,6 @@ function ViewItems() {
         <div className="p-4">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">View Items</h2>
-
-                {/* Delete All Button */}
                 {items.length > 0 && (
                     <button
                         onClick={handleDeleteAll}
@@ -46,9 +63,9 @@ function ViewItems() {
                 <p>No items added yet. Go to "Add Item" page to add some!</p>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {items.map((item, index) => (
+                    {items.map((item) => (
                         <div
-                            key={index}
+                            key={item.id}
                             className="relative border rounded shadow hover:shadow-md"
                         >
                             <img
@@ -61,10 +78,8 @@ function ViewItems() {
                                 <h3 className="font-semibold text-lg">{item.name}</h3>
                                 <p className="text-sm text-gray-600">{item.type}</p>
                             </div>
-
-                            {/* 🗑 Trash Icon for Delete */}
                             <button
-                                onClick={() => handleDelete(index)}
+                                onClick={() => handleDelete(item.id)}
                                 title="Delete Item"
                                 className="absolute top-2 right-2 bg-white border rounded-full p-1 hover:bg-red-100"
                             >
@@ -75,7 +90,6 @@ function ViewItems() {
                 </div>
             )}
 
-            {/* Modal for Item Details */}
             {selectedItem && (
                 <ItemModal item={selectedItem} onClose={() => setSelectedItem(null)} />
             )}

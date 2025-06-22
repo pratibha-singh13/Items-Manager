@@ -3,7 +3,7 @@ import { Link, Outlet } from "react-router-dom";
 function App() {
   return (
     <div>
-      {/* Navbar */}
+
       <nav className="bg-gray-900 text-white p-4 flex justify-between">
         <h1 className="text-lg font-bold">Item Manager</h1>
         <div className="space-x-4">
@@ -16,7 +16,7 @@ function App() {
         </div>
       </nav>
 
-      {/* Page Content */}
+
       <main className="p-4">
         <Outlet />
       </main>

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function AddItem() {
     const [formData, setFormData] = useState({
@@ -46,22 +47,21 @@ function AddItem() {
                 ...filesArray.map((file) => URL.createObjectURL(file)),
             ]);
 
-            // Clear input so user can re-select same files
             e.target.value = "";
         } else {
             setFormData((prev) => ({ ...prev, [name]: value }));
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-
-        const items = JSON.parse(localStorage.getItem("items")) || [];
-        items.push(formData);
-        localStorage.setItem("items", JSON.stringify(items));
-
-        setSuccess(true);
-        setTimeout(() => navigate("/view-items"), 1500);
+        try {
+            await axios.post("http://localhost:5000/items", formData);
+            setSuccess(true);
+            setTimeout(() => navigate("/view-items"), 1500);
+        } catch (error) {
+            console.error("Error saving item:", error);
+        }
     };
 
     return (
@@ -72,7 +72,7 @@ function AddItem() {
 
             {success && (
                 <p className="text-green-600 font-medium mb-2 text-center">
-                    ✅ Item successfully added!
+                    Item successfully added!
                 </p>
             )}
 
