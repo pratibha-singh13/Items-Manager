@@ -13,10 +13,10 @@ function ItemModal({ item, onClose }) {
 
         emailjs
             .send(
-                "service_4uw135k",
-                "template_fuafgu3",
+                import.meta.env.VITE_EMAILJS_SERVICE_ID,
+                import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
                 templateParams,
-                "7LFOIFO2A_ElO1B2n"
+                import.meta.env.VITE_EMAILJS_PUBLIC_KEY
             )
             .then(() => {
                 alert("Enquiry email sent successfully!");
